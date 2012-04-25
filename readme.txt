@@ -1,5 +1,5 @@
 === Hotscot Events ===
-Contributors: huntlyc, daganlev
+Contributors: huntlyc, DaganLev
 Tags: Events, Hotscot
 Donate Link: http://hotscot.net
 Requires at least: 3.0
