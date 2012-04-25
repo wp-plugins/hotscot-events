@@ -2,7 +2,7 @@
 /*
 Plugin Name: Hotscot Events
 Description: Allows users to create and display events.
-Version: 1.0.1
+Version: 1.0.2
 Author: Hotscot
 
 Copyright 2011 Hotscot  (email : support@hotscot.net)
@@ -37,9 +37,22 @@ add_action('admin_enqueue_scripts', 'ht_events_scripts');
 
 //Custom colums for post view in admin 
 add_filter('manage_ht_event_posts_columns' , 'set_ht_event_columns');
-add_action( 'manage_ht_event_posts_custom_column' , 'custom_ht_event_column',10,2);
-add_filter( "manage_edit-ht_event_sortable_columns", "sortable_columns" );
+add_action('manage_ht_event_posts_custom_column' , 'custom_ht_event_column',10,2);
+add_filter("manage_edit-ht_event_sortable_columns", "sortable_columns" );
 add_filter('posts_orderby', 'ht_event_date_column_orderby', 10, 2);
+add_action('restrict_manage_posts', 'ht_restrict_manage_posts');
+add_filter('posts_where', 'ht_admin_date_filter');
+add_filter('parse_query','ht_parse_query');
+
+function ht_parse_query($query){
+	global $post_type;
+    if($post_type=='ht_event'&&!isset($_GET['orderby'])){
+    	$query->query_vars['orderby'] = 'meta_value';
+    	$query->query_vars['meta_key'] = '_ht_start';
+    	$query->query_vars['order'] = 'asc';
+    }
+}
+
 
 // Make these columns sortable
 function sortable_columns() {
@@ -66,6 +79,61 @@ function ht_event_date_column_orderby($orderby, $wp_query){
 	return $orderby;
 }
 
+function ht_restrict_manage_posts(){
+	global $wpdb;
+	global $filter_date;
+	
+	global $post_type;
+    if($post_type=='ht_event'){
+		$filter_date = isset( $_GET['filter_date'] ) ? $_GET['filter_date'] : $filter_date;
+		$query =   "SELECT 
+					YEAR(sdat.meta_value) as syear,
+					MONTH(sdat.meta_value) as smonth
+					FROM $wpdb->posts as wp left join
+					(select * from $wpdb->postmeta where meta_key = '_ht_start') as sdat on wp.ID = sdat.post_id
+					left join (select * from $wpdb->postmeta where meta_key = '_ht_end') as edat on wp.ID = edat.post_id
+					where wp.post_type = 'ht_event' 
+					AND wp.post_status = 'publish'
+					group by syear,smonth
+					order by sdat.meta_value";
+		$filterDates = $wpdb->get_results($query, OBJECT);
+		if($filterDates){
+		?>
+			<select name="filter_date" style="width: 110px;">
+				<option value="">All Events</option>
+				<?php foreach ($filterDates as $fdate): ?>
+					<option <?php selected( $filter_date, $fdate->syear . "-" .  $fdate->smonth); ?> value="<?php echo $fdate->syear . "-" .  $fdate->smonth;?>"><?php echo date("F Y", strtotime($fdate->syear . "-" .  $fdate->smonth . "-" . "01")); ?></option>			
+				<?php endforeach; ?>
+			</select>
+			<style type='text/css'>
+				.tablenav.top .alignleft.actions select[name="m"] { 
+				    display: none; 
+				}
+			</style>
+		<?php
+		}
+	}
+}
+
+function ht_admin_date_filter($where) {
+    if( is_admin() ) {
+        global $wpdb;
+        global $post_type;
+        if($post_type=='ht_event'){
+	        if( isset($_GET['filter_date']) && ($_GET['filter_date']!='')) {        
+	        	list($year, $month) = explode('-', $_GET['filter_date']);
+
+	        	$sdte = date('Y-m-d',strtotime("$year-$month-01"));
+	        	$edte = date('Y-m-d',strtotime("+ 1 month -1 day $sdte"));
+
+	            $where .= " AND ID IN (select post_id from $wpdb->postmeta where meta_key = '_ht_start' and meta_value between '$sdte' and '$edte') ";
+	        }
+	    }
+    }
+    return $where;
+}
+
+
 function set_ht_event_columns($columns) {
     unset($columns['date']);
     return array_merge($columns, 
@@ -84,8 +152,6 @@ function custom_ht_event_column( $column, $post_id ) {
 			}
 		}
 		echo $Start_date;
-
-	
         break;
 
       case 'end_date':
@@ -96,12 +162,9 @@ function custom_ht_event_column( $column, $post_id ) {
 				$End_date = "";
 			}
 		}
-
 		echo $End_date;
-
         break;
-    }
-     
+    }     
 }
 
 
@@ -151,7 +214,7 @@ function ht_events_install(){
  * @param boolean show_thumbnail if true, shows the thumbnail with the event
  * @return string html HTML Output of the events
  **/
-function getEvents($start_date = "", $end_date = "", $summary_only = true, $show_thumbnail = false, $limit = 0){
+function ht_getEvents($start_date = "", $end_date = "", $limit = 0){
 	global $wpdb;
 
 	//If we've not got a start date, use todays date
