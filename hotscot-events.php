@@ -35,6 +35,76 @@ add_action( 'add_meta_boxes', 'ht_display_meta_box' );
 //Custom JS
 add_action('admin_enqueue_scripts', 'ht_events_scripts');
 
+//Custom colums for post view in admin 
+add_filter('manage_ht_event_posts_columns' , 'set_ht_event_columns');
+add_action( 'manage_ht_event_posts_custom_column' , 'custom_ht_event_column',10,2);
+add_filter( "manage_edit-ht_event_sortable_columns", "sortable_columns" );
+add_filter('posts_orderby', 'ht_event_date_column_orderby', 10, 2);
+
+// Make these columns sortable
+function sortable_columns() {
+  return array(
+  	'title' => 'title',
+    'start_date' => 'start_date',
+    'end_date' => 'end_date'
+  );
+
+}
+
+function ht_event_date_column_orderby($orderby, $wp_query){
+	global $wpdb,$post;
+	$wp_query->query = wp_parse_args($wp_query->query);
+
+	if ( 'start_date' == @$wp_query->query['orderby'] ){
+		$orderby = "(SELECT meta_value FROM $wpdb->postmeta WHERE post_id = $wpdb->posts.ID AND meta_key = '_ht_start') " . $wp_query->get('order');
+	}
+
+	if ( 'end_date' == @$wp_query->query['orderby'] ){
+		$orderby = "(SELECT meta_value FROM $wpdb->postmeta WHERE post_id = $wpdb->posts.ID AND meta_key = '_ht_end') " . $wp_query->get('order');
+	}
+
+	return $orderby;
+}
+
+function set_ht_event_columns($columns) {
+    unset($columns['date']);
+    return array_merge($columns, 
+              array('start_date' => 'Start Date',
+                    'end_date' => 'End Date'));
+}
+
+function custom_ht_event_column( $column, $post_id ) {
+    switch ( $column ) {
+      case 'start_date':
+        $Start_date = get_post_meta($post_id, '_ht_start', true);
+		if($Start_date != ""){
+			$Start_date = ht_event_mysql_to_date($Start_date);
+			if($Start_date == "//") {
+				$Start_date = "";
+			}
+		}
+		echo $Start_date;
+
+	
+        break;
+
+      case 'end_date':
+        $End_date = get_post_meta($post_id, '_ht_end', true);
+		if($End_date != ""){
+			$End_date = ht_event_mysql_to_date($End_date);
+			if($End_date == "//") {
+				$End_date = "";
+			}
+		}
+
+		echo $End_date;
+
+        break;
+    }
+     
+}
+
+
 function ht_create_custom_post_type(){
 	register_post_type( 'ht_event',
 		array(

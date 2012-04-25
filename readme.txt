@@ -2,9 +2,9 @@
 Contributors: huntlyc, DaganLev
 Tags: Events, Hotscot
 Donate Link: http://hotscot.net
-Requires at least: 3.0
+Requires at least: 3.1
 Tested up to: 3.3
-Stable tag: 1
+Stable tag: 1.0.1
 
 Simple events module...
 
@@ -22,7 +22,7 @@ Simple events module...
 NA
 
 == Changelog ==
-NA
+1.0.1 - Sortable start and end date columns on admin section.
  
 == Upgrade Notice ==
 NA
