@@ -2,7 +2,7 @@
 /*
 Plugin Name: Hotscot Events
 Description: Allows users to create and display events.
-Version: 1.0.0
+Version: 1.0.1
 Author: Hotscot
 
 Copyright 2011 Hotscot  (email : support@hotscot.net)
