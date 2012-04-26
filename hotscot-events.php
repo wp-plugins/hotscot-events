@@ -2,7 +2,7 @@
 /*
 Plugin Name: Hotscot Events
 Description: Allows users to create and display events.
-Version: 1.0.2
+Version: 1.0.3
 Author: Hotscot
 
 Copyright 2011 Hotscot  (email : support@hotscot.net)
@@ -210,9 +210,8 @@ function ht_events_install(){
  *
  * @param date start_date (yyyy-mm-dd) - Leave blank for today
  * @param date end_date (yyyy-mm-dd) [OPTIONAL]
- * @param boolean summary_only if true, shows only title and summary (no main text)
- * @param boolean show_thumbnail if true, shows the thumbnail with the event
- * @return string html HTML Output of the events
+ * @param limit - limit the number of posts
+ * @return object of posts that relate to this query
  **/
 function ht_getEvents($start_date = "", $end_date = "", $limit = 0){
 	global $wpdb;
