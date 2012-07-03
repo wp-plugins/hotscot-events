@@ -2,7 +2,7 @@
 /*
 Plugin Name: Hotscot Events
 Description: Allows users to create and display events.
-Version: 1.0.3
+Version: 1.0.4
 Author: Hotscot
 
 Copyright 2011 Hotscot  (email : support@hotscot.net)
@@ -290,7 +290,7 @@ function ht_fill_meta_box(){
 function ht_save_event($post_id, $post){
 	if(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return $post_id;
 
-	$startDate = $_POST['Start_date'];  
+	$startDate = isset($_POST['Start_date']) ? $_POST['Start_date'] : '';  
 	if(preg_match("/\d{2}\/\d{2}\/\d{4}/", $startDate)){
 		$startDate = ht_event_date_to_mysql($startDate); 
 	}else{
@@ -298,7 +298,7 @@ function ht_save_event($post_id, $post){
 	}
 	
 
-	$endDate = $_POST['End_date'];  
+	$endDate = isset($_POST['End_date']) ? $_POST['End_date'] : '';  
 	if(preg_match("/\d{2}\/\d{2}\/\d{4}/", $endDate)){
 		$endDate = ht_event_date_to_mysql($endDate); 
 	}else{
