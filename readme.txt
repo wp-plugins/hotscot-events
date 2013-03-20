@@ -4,7 +4,7 @@ Tags: Events, Hotscot
 Donate Link: http://hotscot.net
 Requires at least: 3.1
 Tested up to: 3.3
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 
 Simple events module...
 
@@ -26,9 +26,11 @@ NA
 1.0.2 - Custom Filter on admin page
 1.0.3 - sorted some issues
 1.0.4 - fixed some warnings
- 
+
 == Upgrade Notice ==
-NA
+
+= 1.0.5 =
+* fixed: session warning
 
 == Screenshots ==
 NA
