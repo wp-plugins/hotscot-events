@@ -2,7 +2,7 @@
 /*
 Plugin Name: Hotscot Events
 Description: Allows users to create and display events.
-Version: 1.0.5
+Version: 1.0.6
 Author: Hotscot
 
 Copyright 2011 Hotscot  (email : support@hotscot.net)
@@ -43,6 +43,9 @@ add_filter('posts_orderby', 'ht_event_date_column_orderby', 10, 2);
 add_action('restrict_manage_posts', 'ht_restrict_manage_posts');
 add_filter('posts_where', 'ht_admin_date_filter');
 add_filter('parse_query','ht_parse_query');
+
+//Add shortcode handler for our shortcode "[ht_list_events numevents=2]"
+add_shortcode( 'ht_list_events' , 'ht_list_events_shortcode' );
 
 function ht_parse_query($query){
 	global $post_type;
@@ -203,7 +206,7 @@ function ht_events_install(){
 
 
 /**
- * getEvents - prints list of events as HTML
+ * getEvents - get events as object
  *
  * Will print a list of events either from the current date or one specified.  The end range can be specified or left blank to
  * show everything ending in the future.
@@ -336,4 +339,72 @@ function ht_event_mysql_to_date($dte='2001-01-01'){
 	list ($year, $month, $day) = explode("-", $dte[0]);
 	return $day . "/" . $month ."/" . $year;
 }
+
+
+
+
+/***********************
+ * Front End Functions *
+ ***********************/
+
+/**
+ * echo out the events table
+ * @param  string  $start_date [optional] leave blnk for current date
+ * @param  string  $end_date   [optional] leave blank for all events
+ * @param  integer $limit      [optional] set to 0 for all events
+ * @return void
+ */
+function ht_eventsHTML($start_date = "", $end_date = "", $limit = 0){
+	echo ht_getEventsHTML($start_date, $end_date, $limit);
+}
+
+/**
+ * get the events table html
+ * @param  string  $start_date [optional] leave blnk for current date
+ * @param  string  $end_date   [optional] leave blank for all events
+ * @param  integer $limit      [optional] set to 0 for all events
+ * @return string $html Events table html
+ */
+function ht_getEventsHTML($start_date = "", $end_date = "", $limit = 0){
+	$events = ht_getEvents($start_date, $end_date, $limit);
+
+	$html = "<p>No events to display</p>";
+	if($events){
+		//begin table
+		$html = '<table class="hotscot-events"><thead><tr><th>Start Date</th><th>End Date</th><th>Title</th><th>&nbsp;</th></tr></thead>';
+		//Loop through the events and print them as rows
+		foreach($events as $event){
+			$html .= '<tr>';
+			$html .= '<td class="hotscot-event-start">' . date(get_option('date_format', 'd/m/Y'), strtotime($event->sdte)) . '</td>';
+			$html .= '<td class="hotscot-event-end">' . date(get_option('date_format', 'd/m/Y'), strtotime($event->edte)) . '</td>';
+			$html .= '<td class="hotscot-event-title">' . $event->post_name . '</td>';
+			$html .= '<td class="hotscot-event-link"><a href="' . get_post_type_archive_link('ht_event') .  $event->post_name . '/" title="' . $event->post_name . '">View Details</a></td>';
+			$html .= '</tr>';
+		}
+		//end table
+		$html .= "</table>";
+	}
+
+	return $html;
+}
+
+/**
+ * handler for our shortcode "[ht_list_events numevents=2] numevents is optional
+ * @param string $attributes - attributes applied to shortcode
+ * @return string Event table HTML
+ */
+function ht_list_events_shortcode($attibutes){
+	$numevents = 0; //Default to show all events
+
+	extract( shortcode_atts( array(
+		                            'numevents' => 0
+		                          ) ,
+			                 $attibutes
+			               )
+		   );
+
+	return ht_getEventsHTML($start_date = "", $end_date = "", $limit = $numevents);
+}
+
+
 ?>
