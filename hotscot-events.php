@@ -377,7 +377,7 @@ function ht_getEventsHTML($start_date = "", $end_date = "", $limit = 0){
 			$html .= '<tr>';
 			$html .= '<td class="hotscot-event-start">' . date(get_option('date_format', 'd/m/Y'), strtotime($event->sdte)) . '</td>';
 			$html .= '<td class="hotscot-event-end">' . date(get_option('date_format', 'd/m/Y'), strtotime($event->edte)) . '</td>';
-			$html .= '<td class="hotscot-event-title">' . $event->post_name . '</td>';
+			$html .= '<td class="hotscot-event-title">' . get_the_title($event->ID) . '</td>';
 			$html .= '<td class="hotscot-event-link"><a href="' . get_post_type_archive_link('ht_event') .  $event->post_name . '/" title="' . $event->post_name . '">View Details</a></td>';
 			$html .= '</tr>';
 		}
